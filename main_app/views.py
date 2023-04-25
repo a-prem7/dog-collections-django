@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Dog
+from .forms import FeedingForm
 
 
 # # Add the Cat class & list and view function below the imports
@@ -23,6 +24,7 @@ from .models import Dog
 def home(request):
   return HttpResponse('<h1>Hello Doggy</h1>')
 
+
 def about(request):
   return render(request, 'about.html')
 
@@ -30,11 +32,32 @@ def about(request):
 # Add new view
 def dogs_index(request):
     dogs = Dog.objects.all()
-    return render(request, 'dogs/index.html', { 'dogs': dogs })
+    return render(request, 'dogs/index.html', {'dogs': dogs})
+
 
 def dogs_detail(request, dog_id):
    dog = Dog.objects.get(id=dog_id)
-   return render(request, 'dogs/detail.html', { 'dog': dog })
+    # instantiate FeedingForm to be rendered in the template
+   feeding_form = FeedingForm()
+   return render(request, 'dogs/detail.html', {
+    # include the dog and feeding_form in the context
+    'dog': dog, 'feeding_form': feeding_form
+  })
+
+
+# add this new function below cats_detail
+def add_feeding(request, dog_id):
+  # create the ModelForm using the data in request.POST
+  form = FeedingForm(request.POST)
+  # validate the form
+  if form.is_valid():
+    # don't save the form to the db until it
+    # has the dog_id assigned
+    new_feeding = form.save(commit=False)
+    new_feeding.dog_id = dog_id
+    new_feeding.save()
+  return redirect('detail', dog_id=dog_id)
+  
 
 class DogCreate(CreateView):
   model = Dog
