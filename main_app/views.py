@@ -38,12 +38,16 @@ def dogs_index(request):
 
 def dogs_detail(request, dog_id):
    dog = Dog.objects.get(id=dog_id)
-    # instantiate FeedingForm to be rendered in the template
+
+   # instantiate FeedingForm to be rendered in the template
    feeding_form = FeedingForm()
+   toys_dog_doesnt_have = Toy.objects.exclude(
+       id__in=dog.toys.all().values_list('id'))
    return render(request, 'dogs/detail.html', {
-    # include the dog and feeding_form in the context
-    'dog': dog, 'feeding_form': feeding_form
-  })
+       # include the dog and feeding_form in the context
+       'dog': dog, 'feeding_form': feeding_form,
+       'toys': toys_dog_doesnt_have
+   })
 
 
 # add this new function below cats_detail
@@ -58,17 +62,22 @@ def add_feeding(request, dog_id):
     new_feeding.dog_id = dog_id
     new_feeding.save()
   return redirect('detail', dog_id=dog_id)
+
+def assoc_toy(request, dog_id, toy_id):
+  # Note that you can pass a toy's id instead of the whole object
+  Dog.objects.get(id=dog_id).toys.add(toy_id)
+  return redirect('detail', dog_id=dog_id)
   
 
 class DogCreate(CreateView):
   model = Dog
-  fields = '__all__'
+  fields =('name', 'breed', 'description', 'age')
 
 
 class DogUpdate(UpdateView):
   model = Dog
   # Let's disallow the renaming of a dog by excluding the name field!
-  fields = ['breed', 'description', 'age']
+  fields =('name', 'breed', 'description', 'age')
 
 class DogDelete(DeleteView):
   model = Dog
