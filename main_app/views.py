@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from .models import Dog
+from django.views.generic import ListView, DetailView
+from .models import Dog, Toy
 from .forms import FeedingForm
 
 
@@ -72,3 +73,21 @@ class DogUpdate(UpdateView):
 class DogDelete(DeleteView):
   model = Dog
   success_url = '/dogs/'
+
+class ToysIndex(ListView):
+   model = Toy
+
+class ToysDetail(DetailView):
+  model = Toy
+
+class ToyCreate(CreateView):
+  model = Toy
+  fields = '__all__'
+
+class ToyUpdate(UpdateView):
+  model = Toy
+  fields = '__all__'
+
+class ToyDelete(DeleteView):
+  model = Toy
+  success_url = '/toys/'
