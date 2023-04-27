@@ -2,6 +2,10 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import ListView, DetailView
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Dog, Toy
 from .forms import FeedingForm
 
@@ -31,11 +35,12 @@ def about(request):
 
 
 # Add new view
+@login_required
 def dogs_index(request):
-    dogs = Dog.objects.all()
+    dogs = Dog.objects.filter(user=request.user)
     return render(request, 'dogs/index.html', {'dogs': dogs})
 
-
+@login_required
 def dogs_detail(request, dog_id):
    dog = Dog.objects.get(id=dog_id)
 
@@ -50,7 +55,8 @@ def dogs_detail(request, dog_id):
    })
 
 
-# add this new function below cats_detail
+# add this new function below dogs_detail
+@login_required
 def add_feeding(request, dog_id):
   # create the ModelForm using the data in request.POST
   form = FeedingForm(request.POST)
@@ -62,44 +68,68 @@ def add_feeding(request, dog_id):
     new_feeding.dog_id = dog_id
     new_feeding.save()
   return redirect('detail', dog_id=dog_id)
-
+@login_required
 def assoc_toy(request, dog_id, toy_id):
   # Note that you can pass a toy's id instead of the whole object
   Dog.objects.get(id=dog_id).toys.add(toy_id)
   return redirect('detail', dog_id=dog_id)
-  
+@login_required 
 def remove_toy(request, dog_id, toy_id):
   Dog.objects.get(id=dog_id).toys.remove(toy_id)
   return redirect('detail', dog_id=dog_id)
 
-class DogCreate(CreateView):
+class DogCreate(LoginRequiredMixin, CreateView):
   model = Dog
   fields =('name', 'breed', 'description', 'age')
+  def form_valid(self, form):
+    # Assign the logged in user (self.request.user)
+    form.instance.user = self.request.user  # form.instance is the dog
+    # Let the CreateView do its job as usual
+    return super().form_valid(form)
 
 
-class DogUpdate(UpdateView):
+class DogUpdate(LoginRequiredMixin, UpdateView):
   model = Dog
   # Let's disallow the renaming of a dog by excluding the name field!
   fields =('name', 'breed', 'description', 'age')
 
-class DogDelete(DeleteView):
+class DogDelete(LoginRequiredMixin, DeleteView):
   model = Dog
   success_url = '/dogs/'
 
-class ToysIndex(ListView):
+class ToysIndex(LoginRequiredMixin, ListView):
    model = Toy
 
-class ToysDetail(DetailView):
+class ToysDetail(LoginRequiredMixin, DetailView):
   model = Toy
 
-class ToyCreate(CreateView):
-  model = Toy
-  fields = '__all__'
-
-class ToyUpdate(UpdateView):
+class ToyCreate(LoginRequiredMixin, CreateView):
   model = Toy
   fields = '__all__'
 
-class ToyDelete(DeleteView):
+class ToyUpdate(LoginRequiredMixin, UpdateView):
+  model = Toy
+  fields = '__all__'
+
+class ToyDelete(LoginRequiredMixin, DeleteView):
   model = Toy
   success_url = '/toys/'
+
+def signup(request):
+  error_message = ''
+  if request.method == 'POST':
+    # This is how to create a 'user' form object
+    # that includes the data from the browser
+    form = UserCreationForm(request.POST)
+    if form.is_valid():
+      # This will add the user to the database
+      user = form.save()
+      # This is how we log a user in via code
+      login(request, user)
+      return redirect('index')
+    else:
+      error_message = 'Invalid sign up - try again'
+  # A bad POST or a GET request, so render signup.html with an empty form
+  form = UserCreationForm()
+  context = {'form': form, 'error_message': error_message}
+  return render(request, 'registration/signup.html', context)
