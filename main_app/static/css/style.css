@@ -14,8 +14,17 @@ body {
   footer {
     padding-top: 0;
     text-align: right;
+    
   }
 
   .nav-wrapper, .page-footer {
     background-color: rgb(166, 86, 240);
+  }
+
+  #username {
+    color: rgb(56, 44, 44);
+    padding: 0 0 0 250px;
+    font-size: 30px;
+    font-family:'Times New Roman', Times, serif;
+    font-style: italic;
   }
