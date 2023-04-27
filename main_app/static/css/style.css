@@ -15,3 +15,7 @@ body {
     padding-top: 0;
     text-align: right;
   }
+
+  .nav-wrapper, .page-footer {
+    background-color: rgb(173, 113, 229);
+  }
