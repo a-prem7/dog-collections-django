@@ -27,7 +27,7 @@ from .forms import FeedingForm
 # Create your views here.
 
 def home(request):
-  return HttpResponse('<h1>Hello Doggy</h1>')
+  return render(request, 'about.html')
 
 
 def about(request):
