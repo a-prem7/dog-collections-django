@@ -4,7 +4,8 @@ body {
     display: flex;
     min-height: 100vh;
     flex-direction: column;
-    background-color: rgb(225, 244, 225);
+    background: linear-gradient(90deg, rgb(145, 145, 145) 0%, 
+    rgb(196, 193, 196) 35%, rgb(248, 243, 248) 100%);
   }
   
   main {
@@ -18,7 +19,7 @@ body {
   }
 
   .nav-wrapper, .page-footer {
-    background-color: rgb(166, 86, 240);
+    background-color: dark green;
   }
 
   #username {
